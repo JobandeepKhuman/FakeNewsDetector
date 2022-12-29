@@ -18,8 +18,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, accuracy_score
 
 #Stored as pandas DataFrame data structure
-fakeNews = pd.read_csv('https://raw.githubusercontent.com/laxmimerit/fake-real-news-dataset/main/data/Fake.csv')
-realNews = pd.read_csv('https://raw.githubusercontent.com/laxmimerit/fake-real-news-dataset/main/data/True.csv')
+fakeNews = pd.read_csv('https://github.com/JobandeepKhuman/FakeNewsDetector/releases/tag/v1.0.0/Fake.csv')
+realNews = pd.read_csv('https://github.com/JobandeepKhuman/FakeNewsDetector/releases/tag/v1.0.0/True.csv')
 
 #In some records the data that should be in the text column is in the title column and the text column is left empty. To fix this I will combine the
 #title and text columns into the text column. The additional title information should also provide the machine learning model with more data to use when
@@ -27,9 +27,6 @@ realNews = pd.read_csv('https://raw.githubusercontent.com/laxmimerit/fake-real-n
 realNews['text'] = realNews['title'] + " " + realNews['text']
 fakeNews['text'] = fakeNews['title'] + " " + fakeNews['text']
 #Making all the text lowercase
-#.apply() applies a given function to every row in the dataframe
-#lambda is an anonymous function in python
-#x is the parameter and everything after the ':' is the expression
 realNews['text'] = realNews['text'].apply(lambda x: str(x).lower())
 fakeNews['text'] = fakeNews['text'].apply(lambda x: str(x).lower())
 
@@ -38,7 +35,7 @@ fakeNews['text'] = fakeNews['text'].apply(lambda x: str(x).lower())
 realNews['class'] = 1
 fakeNews['class'] = 0
 
-#Removing all columns from except text and class from real and fake news dataframes
+#Removing all columns from except text and class from real and fake news dataframes, as no other columns hold useful information to be processed
 realNews = realNews[['text', 'class']]
 fakeNews = fakeNews[['text', 'class']]
 #Combining the real and fake news dataframes
@@ -71,8 +68,7 @@ vocab_size = len(tokenizer.word_index) + 1
 vocab = tokenizer.word_index
 
 
-#Initialising weight matrix to avoid dynamic memory allocation
-#'Has to be a tuple there'
+#Initialising weight matrix
 weight_matrix = np.zeros((vocab_size, DIM))
 
 for word, i in vocab.items():
@@ -80,8 +76,8 @@ for word, i in vocab.items():
 
 embedding_vectors = weight_matrix  #get_weight_matrix(w2v_model)
 
-odel = Sequential()
-model.add(Embedding(vocab_size, output_dim=DIM, weights = [embedding_vectors], input_length=maxlen, trainable=False))#can set to true and see if it works better
+model = Sequential()
+model.add(Embedding(vocab_size, output_dim=DIM, weights = [embedding_vectors], input_length=maxlen, trainable=False))#can set to true also
 model.add(LSTM(units=128))
 #Sigmoid is used over softmax as there are only 2 classes: fake and real
 model.add(Dense(1, activation='sigmoid'))
