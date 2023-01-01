@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import gensim
 
+#Text tokenization utility class
 from tensorflow.keras.preprocessing.text import Tokenizer
 #Used to pad smaller text files to make them equal to the standard file length to be used, because deep learning model takes only a constant input
 from tensorflow.keras.preprocessing.sequence import pad_sequences
@@ -57,35 +58,47 @@ w2v_model = gensim.models.Word2Vec(sentences=allWords, size=DIM, window=10, min_
 tokenizer = Tokenizer()
 #Updating the internal vocabulary based on a list of texts
 tokenizer.fit_on_texts(allWords)
-#Turning the list of strings (allWords) intoa sequence of integers
+#Mapping each unique word to a unique integer (can be thought of as a unique sequence of digits)
 allWords = tokenizer.texts_to_sequences(allWords)
 
 #If a sequence (news source) has less than 1000 words it is padded, if it has more than 1000 words it is truncated
 maxlen = 1000
 allWords = pad_sequences(allWords, maxlen=maxlen)
 
+#Number of unique words
 vocab_size = len(tokenizer.word_index) + 1
 vocab = tokenizer.word_index
 
 
-#Initialising weight matrix
+#Initialising weight matrix of dimenstion numberOfUniqueWords x DimensionOfVectorRepresnetingEachWord
 weight_matrix = np.zeros((vocab_size, DIM))
 
+#Weight Matrix = Array of vectors representing each unique word
 for word, i in vocab.items():
    weight_matrix[i] = w2v_model.wv[word]
 
-embedding_vectors = weight_matrix  #get_weight_matrix(w2v_model)
-
+#SETTING UP THE MODEL
+#Object to group a linear stack of layers into a Tensorflow.keras.model which has inference and training features
 model = Sequential()
-model.add(Embedding(vocab_size, output_dim=DIM, weights = [embedding_vectors], input_length=maxlen, trainable=False))#can set to true also
+#Embedding() turns positive integers into dense vectors of a fixed size
+#vocab_size = dimension of input vector
+#Input length = length of input sequences (in this case the input sequence will be the sequenxe of vectors that represent the words in a news article)
+#Trainable = False means that the weights matrix is not changed (retrained) by the ML model as word2vector has already done this
+model.add(Embedding(vocab_size, output_dim=DIM, weights = [weight_matrix], input_length=maxlen, trainable=False))
+#Adding a Long Short-Term Memory Layer
+#Units = the dimension of the output space
 model.add(LSTM(units=128))
+#Adding a densley connected Neural Network layer
 #Sigmoid is used over softmax as there are only 2 classes: fake and real
 model.add(Dense(1, activation='sigmoid'))
+#Configuring the model for training
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['acc'])
 model.summary()
 
+#Splitting the input data and corresponding target output data into training and testing datasets
 X_train, X_test, y_train, y_test = train_test_split(allWords,y)
-model.fit(X_train, y_train, validation_split=0.3, epochs=6)
+#Training the model
+model.fit(X_train, y_train, epochs=100)
 
 y_pred = (model.predict(X_test) >=0.5).astype(int)
 accuracy_score(y_test, y_pred)
