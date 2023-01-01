@@ -50,7 +50,7 @@ allWords = [d.split() for d in allNews['text'].tolist()]
 #Converting the text data to numerical data using the word to vector technique
 #sentences = the data that will be used to train the model (must be an iterable of iterables)
 #size = the dimensionality of the vectors that will represent the words
-#window = the maximum difference between the current and predicted word within a sentence
+#window = the number of nearby words the model will consider (the model learns by seeing what words appear near each other)
 #min_count = all words with a total frequency less than min_count are ignored
 DIM=100 
 w2v_model = gensim.models.Word2Vec(sentences=allWords, size=DIM, window=10, min_count=1)
