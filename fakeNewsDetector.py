@@ -13,7 +13,7 @@ from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 #Will be fed the model layers
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Embedding, LSTM, Conv1D, MaxPool1D
+from tensorflow.keras.layers import Dense, Embedding, LSTM
 from sklearn.model_selection import train_test_split
 #Used to test model performance
 from sklearn.metrics import classification_report, accuracy_score
